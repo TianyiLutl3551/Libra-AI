@@ -1,0 +1,30 @@
+{
+    "paths": {
+        "input_dir": "../input",
+        "output_dir": "output",
+        "tesseract_cmd": null
+    },
+    "logging": {
+        "process_log_file": "log/process_log.txt",
+        "validation_log_file": "log/validation_log.txt",
+        "error_log_file": "log/error_log.txt",
+        "summary_log_file": "log/summary_log.txt"
+    },
+    "processing": {
+        "supported_extensions": [
+            ".xlsx",
+            ".xls",
+            ".msg"
+        ],
+        "azure_model": "prebuilt-layout",
+        "validation_enabled": true
+    },
+    "system": {
+        "auto_detect_tesseract": true,
+        "platform_specific_paths": {
+            "windows_tesseract": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+            "darwin_tesseract": "/opt/homebrew/bin/tesseract",
+            "linux_tesseract": "/usr/bin/tesseract"
+        }
+    }
+}

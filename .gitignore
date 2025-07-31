@@ -1,0 +1,69 @@
+# Sensitive configuration files
+secrets.toml
+config.json
+
+# Virtual environments
+venv/
+env/
+.env
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data directories - exclude contents but keep structure
+data/input/*
+data/output/*
+log/*
+
+# Keep .gitkeep files to preserve folder structure
+!data/input/.gitkeep
+!data/output/.gitkeep
+!log/.gitkeep
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Coverage reports
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Documentation builds
+docs/_build/
+
+# Database files
+*.db
+*.sqlite3
+
+# Backup files
+*.backup
+*.bak
+
+# iCloud files
+*.icloud 
