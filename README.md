@@ -17,9 +17,11 @@ That's it! The setup script will automatically:
 - ✅ Check Tesseract installation
 
 ### After Setup:
-1. **Add API keys** to `config/secrets.toml`
-2. **Add input files** to `data/input/`
-3. **Run workflow**: `python main.py --mode all`
+1. **Run pip install -r requirements.txt**: `install all necessary packages`
+2. **Add API keys** to `config/secrets.toml`
+3. **Modify input dir in config.json** to `data/input`
+4. **Modify output dir in config.json** to `data/output`
+5. **Run workflow**: `python main.py --mode all`
 
 ## 🔑 Required API Keys
 
