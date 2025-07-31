@@ -48,6 +48,7 @@ class ExcelWorkflowNode:
                 ]
             )
             transformed_data = response.choices[0].message.content.strip()
+            # Find the JSON array in the AI response
             json_match = re.search(r'(\[.*?\])', transformed_data, re.DOTALL)
             if json_match:
                 json_str = json_match.group(1)

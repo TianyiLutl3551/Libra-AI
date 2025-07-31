@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""
-Refactored Main LangGraph Workflow for Document Processing
-Clean, modular design with separated concerns
-"""
-
 import os
 import argparse
 from typing import Dict, Any
@@ -204,10 +199,20 @@ class WorkflowManager:
         
         for file_path in files:
             try:
-                self.workflow.process_file(file_path)
-                successful += 1
+                result = self.workflow.process_file(file_path)
+                
+                # Check validation result to determine success/failure
+                validation = result.get("validation", {})
+                if validation.get("match", False):
+                    successful += 1
+                    print(f"✅ {os.path.basename(file_path)}: Processing and validation successful")
+                else:
+                    failed += 1
+                    error_msg = validation.get("error", "Validation failed")
+                    print(f"❌ {os.path.basename(file_path)}: {error_msg}")
+                    
             except Exception as e:
-                print(f"Failed to process {file_path}: {e}")
+                print(f"❌ {os.path.basename(file_path)}: Processing failed - {e}")
                 failed += 1
         
         # Log summary
@@ -239,10 +244,21 @@ class WorkflowManager:
         
         for file_path in files:
             try:
-                self.workflow.process_file(file_path)
-                successful += 1
+                result = self.workflow.process_file(file_path)
+                
+                # Check validation result to determine success/failure
+                validation = result.get("validation", {})
+                if validation.get("match", False):
+                    successful += 1
+                    print(f"✅ {os.path.basename(file_path)}: Processing and validation successful")
+                else:
+                    failed += 1
+                    error_msg = validation.get("error", "Validation failed")
+                    print(f"❌ {os.path.basename(file_path)}: {error_msg}")
+                    self.logger.log_error(error_msg, f"processing file by date {date_code}: {file_path}")
+                    
             except Exception as e:
-                print(f"Failed to process {file_path}: {e}")
+                print(f"❌ {os.path.basename(file_path)}: Processing failed - {e}")
                 self.logger.log_error(str(e), f"processing file by date {date_code}: {file_path}")
                 failed += 1
         
@@ -276,10 +292,21 @@ class WorkflowManager:
         
         for file_path in files:
             try:
-                self.workflow.process_file(file_path)
-                successful += 1
+                result = self.workflow.process_file(file_path)
+                
+                # Check validation result to determine success/failure
+                validation = result.get("validation", {})
+                if validation.get("match", False):
+                    successful += 1
+                    print(f"✅ {os.path.basename(file_path)}: Processing and validation successful")
+                else:
+                    failed += 1
+                    error_msg = validation.get("error", "Validation failed")
+                    print(f"❌ {os.path.basename(file_path)}: {error_msg}")
+                    self.logger.log_error(error_msg, f"processing file by date range {start_date}-{end_date}: {file_path}")
+                    
             except Exception as e:
-                print(f"Failed to process {file_path}: {e}")
+                print(f"❌ {os.path.basename(file_path)}: Processing failed - {e}")
                 self.logger.log_error(str(e), f"processing file by date range {start_date}-{end_date}: {file_path}")
                 failed += 1
         
@@ -315,10 +342,21 @@ class WorkflowManager:
         
         for file_path in files:
             try:
-                self.workflow.process_file(file_path)
-                successful += 1
+                result = self.workflow.process_file(file_path)
+                
+                # Check validation result to determine success/failure
+                validation = result.get("validation", {})
+                if validation.get("match", False):
+                    successful += 1
+                    print(f"✅ {os.path.basename(file_path)}: Processing and validation successful")
+                else:
+                    failed += 1
+                    error_msg = validation.get("error", "Validation failed")
+                    print(f"❌ {os.path.basename(file_path)}: {error_msg}")
+                    self.logger.log_error(error_msg, f"processing unprocessed file: {file_path}")
+                    
             except Exception as e:
-                print(f"Failed to process {file_path}: {e}")
+                print(f"❌ {os.path.basename(file_path)}: Processing failed - {e}")
                 self.logger.log_error(str(e), f"processing unprocessed file: {file_path}")
                 failed += 1
         

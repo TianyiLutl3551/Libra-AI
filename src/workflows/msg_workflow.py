@@ -217,6 +217,7 @@ class MsgWorkflowNode:
                 numeric_data.append((i, parsed_val))
         return numeric_data
 
+    # for validation
     def _parse_table_text_robust(self, table_text, table_type):
         """
         Robust parsing of Document Intelligence table text for both RED and BLUE tables.
