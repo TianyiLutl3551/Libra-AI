@@ -190,8 +190,34 @@ class MsgWorkflowNode:
         if value_str in ['None', 'nan', '', '-', 'None']:
             return 0.0
         
-        # Clean OCR artifacts
-        clean_value = re.sub(r'0\n:unselected:', '0', str(value_str))
+        # Handle OCR artifacts like 0\n:unselected:, -1\n:selected:, -2\n:unselected:
+        value_str = str(value_str)
+        
+        # Pattern to match OCR artifacts: number\n:unselected: or number\n:selected:
+        ocr_pattern = r'(-?\d+)\n:(unselected|selected):'
+        ocr_match = re.search(ocr_pattern, value_str)
+        
+        if ocr_match:
+            # Extract the numeric value from the OCR artifact
+            numeric_value = ocr_match.group(1)
+            print(f"[DEBUG] OCR artifact found: '{value_str}' -> {numeric_value}")
+            return float(numeric_value)
+        
+        # Also handle the case where the OCR artifact is exactly "0\n:unselected:" or similar
+        if value_str in ['0\\n:unselected:', '0\n:unselected:', '-1\\n:selected:', '-1\n:selected:', '-2\\n:unselected:', '-2\n:unselected:']:
+            # Extract the numeric part
+            if '0\\n:unselected:' in value_str or '0\n:unselected:' in value_str:
+                print(f"[DEBUG] OCR artifact (0) found: '{value_str}' -> 0")
+                return 0.0
+            elif '-1\\n:selected:' in value_str or '-1\n:selected:' in value_str:
+                print(f"[DEBUG] OCR artifact (-1) found: '{value_str}' -> -1")
+                return -1.0
+            elif '-2\\n:unselected:' in value_str or '-2\n:unselected:' in value_str:
+                print(f"[DEBUG] OCR artifact (-2) found: '{value_str}' -> -2")
+                return -2.0
+        
+        # Clean other OCR artifacts
+        clean_value = re.sub(r'0\n:unselected:', '0', value_str)
         clean_value = clean_value.strip()
         
         # Handle parentheses (negative values)
@@ -331,19 +357,41 @@ class MsgWorkflowNode:
             # Look for the pattern: Label... Liability Asset Net MTD QTD
             # The LLM correctly identifies liability and asset columns
             
-            # Handle special OCR cases
-            if '0\\n:unselected:' in line:
-                # Find liability (first numeric), treat OCR artifact as 0 for asset
-                liability_val = numeric_data[0][1]
-                # Look for the next valid numeric after the OCR artifact
-                clean_line = line.replace('0\\n:unselected:', '0')
-                clean_parts = clean_line.split()
-                clean_numeric = self._find_numeric_columns_in_row(clean_parts)
+            # Handle special OCR cases with improved logic
+            if '\\n:unselected:' in line or '\\n:selected:' in line:
+                print(f"[DEBUG] Processing OCR line: {line}")
+                # Parse the line directly using the improved _parse_numeric_value method
+                row_parts = line.split()
+                print(f"[DEBUG] Row parts: {row_parts}")
                 
-                # The pattern is usually: liability, ocr_artifact(=0), next_value, next_value...
-                # The LLM treats ocr_artifact as asset=0
-                asset_val = 0.0
-                return liability_val, asset_val
+                # Find the first two numeric values (liability and asset)
+                liability_val = None
+                asset_val = None
+                
+                for i, part in enumerate(row_parts):
+                    parsed_val = self._parse_numeric_value(part)
+                    print(f"[DEBUG] Part {i}: '{part}' -> {parsed_val}")
+                    if parsed_val is not None:
+                        if liability_val is None:
+                            liability_val = parsed_val
+                            print(f"[DEBUG] Found liability: {liability_val}")
+                        elif asset_val is None:
+                            asset_val = parsed_val
+                            print(f"[DEBUG] Found asset: {asset_val}")
+                            break  # Found both values
+                
+                # If we found both values, return them
+                if liability_val is not None and asset_val is not None:
+                    print(f"[DEBUG] Returning: Liability={liability_val}, Asset={asset_val}")
+                    return liability_val, asset_val
+                elif liability_val is not None:
+                    # Only found liability, asset is 0
+                    print(f"[DEBUG] Only liability found: {liability_val}, asset=0")
+                    return liability_val, 0.0
+                else:
+                    # No valid values found, treat as 0,0
+                    print(f"[DEBUG] No values found, returning 0,0")
+                    return 0.0, 0.0
             else:
                 # Normal case: first two numeric values
                 return numeric_data[0][1], numeric_data[1][1]

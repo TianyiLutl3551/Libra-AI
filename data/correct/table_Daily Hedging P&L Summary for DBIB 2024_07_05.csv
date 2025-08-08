@@ -1,0 +1,15 @@
+VALUATION_DATE,PRODUCT_TYPE,RISK_TYPE,GREEK_TYPE,RIDER_VALUE,ASSET_VALUE
+20240705,DBIB,Equity,Delta,4.2,-3.8
+20240705,DBIB,Equity,Gamma_Residual,0.3,0.0
+20240705,DBIB,Interest_Rate,Rho,-28.1,27.7
+20240705,DBIB,Interest_Rate,Convexity_Residual,-0.3,0.4
+20240705,DBIB,Interest_Rate,Basis,0.0,6.9
+20240705,DBIB,Credit,HY_Total,-0.0,-0.3
+20240705,DBIB,Credit,AGG_Credit,0.6,0.0
+20240705,DBIB,Credit,Agg_Risk_Free_Growth,-0.1,0.0
+20240705,DBIB,Credit,ILP_Update,0.0,0.0
+20240705,DBIB,Fund_Basis_Fund_Mapping,,1.8,-1.1
+20240705,DBIB,Passage_Of_Time,,-0.5,-0.1
+20240705,DBIB,Other_Inforce,,0.1,0.0
+20240705,DBIB,New_Business,,-0.1,0.0
+20240705,DBIB,Cross_Impact_True_up,,-0.9,-0.0

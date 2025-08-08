@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+"""
+Script to copy failed files based on validation log
+"""
+
+import os
+import re
+import shutil
+from pathlib import Path
+
+def parse_validation_log(log_path):
+    """Parse the validation log to find failed files"""
+    failed_files = []
+    
+    with open(log_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and '| wrong' in line:
+                # Extract filename from line like: [timestamp] filename.msg | wrong
+                match = re.search(r'\] (.+\.msg) \| wrong', line)
+                if match:
+                    filename = match.group(1)
+                    failed_files.append(filename)
+    
+    return failed_files
+
+def extract_date_and_product(filename):
+    """Extract date and product from filename"""
+    # Example: "Daily Hedging P&L Summary for DBIB 2024_03_22.msg"
+    # Extract date: 2024_03_22 -> 20240322
+    # Extract product: DBIB or WB
+    
+    # Extract date
+    date_match = re.search(r'(\d{4})_(\d{2})_(\d{2})', filename)
+    if date_match:
+        year, month, day = date_match.groups()
+        date_str = f"{year}{month}{day}"
+    else:
+        return None, None
+    
+    # Extract product
+    if 'DBIB' in filename:
+        product = 'DBIB'
+    elif 'WB' in filename:
+        product = 'WB'
+    else:
+        return None, None
+    
+    return date_str, product
+
+def find_output_files(output_dir, date_str, product):
+    """Find the corresponding output files for a given date and product"""
+    files_to_copy = []
+    
+    # Look for table file
+    table_pattern = f"table_Daily Hedging P&L Summary for {product} {date_str[:4]}_{date_str[4:6]}_{date_str[6:8]}.csv"
+    table_path = os.path.join(output_dir, table_pattern)
+    if os.path.exists(table_path):
+        files_to_copy.append(table_path)
+    
+    # Look for highlights file
+    highlights_pattern = f"highlights_{date_str}_{product}.csv"
+    highlights_path = os.path.join(output_dir, highlights_pattern)
+    if os.path.exists(highlights_path):
+        files_to_copy.append(highlights_path)
+    
+    # Also look for highlights files with suffixes (like _002, _003, etc.)
+    for suffix in range(1, 10):
+        highlights_pattern_suffix = f"highlights_{date_str}_{product}_{suffix:03d}.csv"
+        highlights_path_suffix = os.path.join(output_dir, highlights_pattern_suffix)
+        if os.path.exists(highlights_path_suffix):
+            files_to_copy.append(highlights_path_suffix)
+            break  # Take the first one found
+    
+    return files_to_copy
+
+def copy_failed_files():
+    """Main function to copy failed files"""
+    
+    # Paths
+    validation_log_path = r"C:\dev\AI_repo\Libra-AI\log\validation_log.txt"
+    output_dir = r"C:\dev\AI_repo\Libra-AI\data\output"
+    wrong_dir = r"C:\dev\AI_repo\Libra-AI\data\wrong"
+    
+    # Create wrong directory if it doesn't exist
+    os.makedirs(wrong_dir, exist_ok=True)
+    
+    # Parse validation log
+    print("Parsing validation log for failed files...")
+    failed_files = parse_validation_log(validation_log_path)
+    print(f"Found {len(failed_files)} failed files")
+    
+    # Process each failed file
+    copied_count = 0
+    skipped_count = 0
+    
+    for filename in failed_files:
+        print(f"\nProcessing: {filename}")
+        
+        # Extract date and product
+        date_str, product = extract_date_and_product(filename)
+        if not date_str or not product:
+            print(f"  Skipped: Could not extract date/product from {filename}")
+            skipped_count += 1
+            continue
+        
+        print(f"  Date: {date_str}, Product: {product}")
+        
+        # Find output files
+        output_files = find_output_files(output_dir, date_str, product)
+        
+        if not output_files:
+            print(f"  Skipped: No output files found for {filename}")
+            skipped_count += 1
+            continue
+        
+        # Copy files
+        for file_path in output_files:
+            filename_only = os.path.basename(file_path)
+            dest_path = os.path.join(wrong_dir, filename_only)
+            
+            try:
+                shutil.copy2(file_path, dest_path)
+                print(f"  Copied: {filename_only}")
+                copied_count += 1
+            except Exception as e:
+                print(f"  Error copying {filename_only}: {e}")
+                skipped_count += 1
+    
+    print(f"\nSummary:")
+    print(f"  Total failed files: {len(failed_files)}")
+    print(f"  Files copied: {copied_count}")
+    print(f"  Files skipped: {skipped_count}")
+    print(f"  Output directory: {wrong_dir}")
+
+if __name__ == "__main__":
+    copy_failed_files() 

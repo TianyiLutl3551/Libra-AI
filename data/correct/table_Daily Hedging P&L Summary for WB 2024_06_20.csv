@@ -1,0 +1,15 @@
+VALUATION_DATE,PRODUCT_TYPE,RISK_TYPE,GREEK_TYPE,RIDER_VALUE,ASSET_VALUE
+20240620,WB,Equity,Delta,-5.4,5.9
+20240620,WB,Equity,Gamma_Residual,0.8,0.0
+20240620,WB,Interest_Rate,Rho,35.4,-35.9
+20240620,WB,Interest_Rate,Convexity_Residual,-0.1,0.0
+20240620,WB,Interest_Rate,Basis,0.0,-1.6
+20240620,WB,Credit,HY_Total,-0.0,0.5
+20240620,WB,Credit,AGG_Credit,1.1,-0.1
+20240620,WB,Credit,Agg_Risk_Free_Growth,-1.0,0.0
+20240620,WB,Credit,ILP_Update,0.0,0.0
+20240620,WB,Fund_Basis_Fund_Mapping,,-5.6,0.5
+20240620,WB,Passage_Of_Time,,-2.5,2.5
+20240620,WB,Other_Inforce,,2.8,0.0
+20240620,WB,New_Business,,0.0,0.0
+20240620,WB,Cross_Impact_True_up,,-0.3,0.0

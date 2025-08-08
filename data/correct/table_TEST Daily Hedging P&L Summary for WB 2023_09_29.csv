@@ -1,0 +1,13 @@
+VALUATION_DATE,PRODUCT_TYPE,RISK_TYPE,GREEK_TYPE,RIDER_VALUE,ASSET_VALUE
+20230929,WB,Equity,Delta,-6,8
+20230929,WB,Equity,Gamma,0,0
+20230929,WB,Equity,Volatility,0,0
+20230929,WB,Rates,Dynamic_Rho,-14,16
+20230929,WB,Credit,Credit,-8,-1
+20230929,WB,Underlying_Fund,,5,-3
+20230929,WB,Theta_Carry,,-3,1
+20230929,WB,Other_Unhedged,,-2,0
+20230929,WB,Fees,,0,2
+20230929,WB,ILP,,-1,0
+20230929,WB,New_Business_Model_Change,,0,0
+
