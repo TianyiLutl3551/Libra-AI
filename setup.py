@@ -15,6 +15,15 @@ def print_header():
     """Print setup header"""
     print("🚀 AI Document Processing Workflow - Setup")
     print("=" * 50)
+    
+    # Check if running in venv
+    in_venv = hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+    if not in_venv:
+        print("ℹ️  Note: You're running setup with system Python.")
+        print("   Setup will create/use a virtual environment (venv) for this project.")
+        print("   After setup, remember to activate venv before running the project!")
+        print("")
+    
     print("Setting up your environment automatically...")
     print("")
 
@@ -60,24 +69,72 @@ def setup_virtual_environment():
     # Get pip command based on OS
     if platform.system() == "Windows":
         pip_cmd = str(Path("venv/Scripts/pip.exe"))
+        python_cmd = str(Path("venv/Scripts/python.exe"))
         activate_cmd = "venv\\Scripts\\activate"
     else:
         pip_cmd = str(Path("venv/bin/pip"))
+        python_cmd = str(Path("venv/bin/python"))
         activate_cmd = "source venv/bin/activate"
     
+    # Check if pip exists
+    if not Path(pip_cmd).exists():
+        print(f"   ⚠️  pip not found at {pip_cmd}")
+        print("   💡 Try recreating the virtual environment")
+        return False
+    
     print(f"   💡 To activate later: {activate_cmd}")
+    print(f"   💡 To use venv Python: {python_cmd}")
     
     # Install requirements
     print("\n📦 Installing dependencies...")
     if Path("requirements.txt").exists():
         try:
-            subprocess.run([pip_cmd, "install", "--upgrade", "pip"], check=True)
-            subprocess.run([pip_cmd, "install", "-r", "requirements.txt"], check=True)
+            # Try to upgrade pip first (non-blocking - continue even if it fails)
+            print("   🔄 Upgrading pip (optional)...")
+            try:
+                subprocess.run(
+                    [pip_cmd, "install", "--upgrade", "pip"],
+                    check=False,
+                    capture_output=True,
+                    text=True
+                )
+            except Exception:
+                pass  # Ignore pip upgrade errors - not critical
+            
+            # Install requirements with output
+            print("   🔄 Installing packages from requirements.txt...")
+            result = subprocess.run(
+                [pip_cmd, "install", "-r", "requirements.txt"],
+                check=True,
+                capture_output=True,
+                text=True
+            )
             print("   ✅ All dependencies installed successfully")
             return True
         except subprocess.CalledProcessError as e:
-            print(f"   ⚠️  Some packages failed to install. Error: {e}")
-            print("   💡 You may need to run manually: pip install -r requirements.txt")
+            print(f"   ❌ Package installation failed!")
+            print(f"   Error code: {e.returncode}")
+            if e.stdout:
+                # Show last few lines of output
+                output_lines = e.stdout.strip().split('\n')
+                if len(output_lines) > 10:
+                    print(f"   Output (last 10 lines):")
+                    for line in output_lines[-10:]:
+                        print(f"      {line}")
+                else:
+                    print(f"   Output: {e.stdout}")
+            if e.stderr:
+                # Show last few lines of error
+                error_lines = e.stderr.strip().split('\n')
+                if len(error_lines) > 10:
+                    print(f"   Error (last 10 lines):")
+                    for line in error_lines[-10:]:
+                        print(f"      {line}")
+                else:
+                    print(f"   Error: {e.stderr}")
+            print(f"\n   💡 To install manually, activate venv and run:")
+            print(f"      {activate_cmd}")
+            print(f"      pip install -r requirements.txt")
             return False
     else:
         print("   ❌ requirements.txt not found")
@@ -189,24 +246,42 @@ def check_api_keys():
         print("   ❌ secrets.toml not found")
         return False
 
-def print_next_steps(api_keys_configured, tesseract_found):
+def print_next_steps(api_keys_configured, tesseract_found, venv_success):
     """Print next steps for the user"""
     print("\n" + "=" * 50)
     print("🎉 Setup completed!")
     
     print("\n📋 Next steps:")
     
+    if not venv_success:
+        print("1. ⚠️  IMPORTANT: Package installation had issues!")
+        print("   Please activate the virtual environment and install manually:")
+        if platform.system() == "Windows":
+            print("      venv\\Scripts\\activate")
+        else:
+            print("      source venv/bin/activate")
+        print("      pip install -r requirements.txt")
+        print("")
+    
     if not api_keys_configured:
-        print("1. ⚠️  REQUIRED: Edit config/secrets.toml with your API keys:")
+        print(f"{'2' if venv_success else '3'}. ⚠️  REQUIRED: Edit config/secrets.toml with your API keys:")
         print("   - OpenAI API key (get from: https://platform.openai.com/api-keys)")
         print("   - Azure Document Intelligence endpoint and key")
     
     if not tesseract_found:
-        print("2. ⚠️  REQUIRED: Install Tesseract OCR (see instructions above)")
+        step_num = '3' if venv_success and api_keys_configured else ('2' if not api_keys_configured else '3')
+        print(f"{step_num}. ⚠️  REQUIRED: Install Tesseract OCR (see instructions above)")
     
-    print("3. 📁 Put your input files (.msg, .xlsx) in: data/input/")
-    print("4. 🚀 Run the workflow:")
-    print("   python main.py --mode all")
+    step_num = '4' if venv_success else '2'
+    print(f"\n{step_num}. ⚠️  IMPORTANT: Activate virtual environment before running:")
+    if platform.system() == "Windows":
+        print("   venv\\Scripts\\activate")
+        print("   python main.py --mode all")
+    else:
+        print("   source venv/bin/activate")
+        print("   python main.py --mode all")
+    
+    print(f"\n{int(step_num) + 1}. 📁 Put your input files (.msg, .xlsx) in: data/input/")
     
     print("\n💡 Additional commands:")
     print("   python main.py --mode range 20240501 20240501  # Process specific date")
@@ -227,7 +302,7 @@ def main():
     api_keys_configured = check_api_keys()
     
     # Print results
-    print_next_steps(api_keys_configured, tesseract_found)
+    print_next_steps(api_keys_configured, tesseract_found, venv_success)
     
     # Final status
     if venv_success and tesseract_found and api_keys_configured:
